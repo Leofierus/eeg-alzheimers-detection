@@ -1,7 +1,15 @@
 import os
 import mne
+import warnings
 
 from torch.utils.data import Dataset
+
+# Ignore RuntimeWarning
+warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+# Enable CUDA
+mne.utils.set_config('MNE_USE_CUDA', 'true')
+mne.cuda.init_cuda(verbose=True)
 
 
 def load_eeg_data(file_path):
