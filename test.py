@@ -177,11 +177,15 @@ Correct A: 82, Total A: 82
 Correct C: 0, Total C: 140
 Accuracy: 36.9369%
 
-Train 3:
+Train 3: (Overfit to C)
 Epochs: 180
 Learning rate: 0.001
 Batch size: 20
 F1=64, D=2, F2=128, dropout_rate=0.5
 timepoints: 30000
-Time taken: 
+Time taken: ~ 12 hours
+Correct: 140, Total: 222
+Correct A: 0, Total A: 82
+Correct C: 140, Total C: 140
+Accuracy: 63.0631%
 """

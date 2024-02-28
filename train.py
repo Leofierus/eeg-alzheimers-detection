@@ -56,7 +56,7 @@ for entry in data_info:
 train_dataset = EEGDataset(data_dir, train_data)
 test_dataset = EEGDataset(data_dir, test_data)
 
-train_dataloader = DataLoader(train_dataset, batch_size=20, shuffle=True)
+train_dataloader = DataLoader(train_dataset, batch_size=10, shuffle=True)
 test_dataloader = DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
 
 # Print train_dataloader info
@@ -66,7 +66,7 @@ print(f'Train dataloader batch size: {train_dataloader.batch_size}\n')
 
 # Hyperparameters
 learning_rate = 0.001
-epochs = 180
+epochs = 300
 
 # Loss function and optimizer
 criterion = nn.CrossEntropyLoss()
