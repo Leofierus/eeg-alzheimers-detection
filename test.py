@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 if not os.path.exists('images'):
     os.makedirs('images')
 
-model_file = 'eegNet_train1.pth'
+model_file = 'eegNet.pth'
 model = EEGNet(num_channels=19, timepoints=30000, num_classes=2, F1=64, D=2, F2=128, dropout_rate=0.5)
 model.load_state_dict(torch.load(model_file))
 
@@ -153,22 +153,34 @@ print("Confusion Matrix saved successfully")
 
 
 """
-Train 1:
+Train 1: (Good)
 Epochs: 300
 Learning rate: 0.001
 Batch size: 8
 F1=64, D=2, F2=128, dropout_rate=0.5
 timepoints: 30000
+Time taken: ~ 6-7 hours
 Correct: 133, Total: 222
 Correct A: 45, Total A: 82
 Correct C: 88, Total C: 140
 Accuracy: 59.9099%
 
-Train 2:
+Train 2: (Overfit to A)
 Epochs: 1000
 Learning rate: 0.001
 Batch size: 16
 F1=64, D=2, F2=128, dropout_rate=0.5
 timepoints: 30000
+Time taken: ~ 2 days
+Correct: 82, Total: 222
+Correct A: 82, Total A: 82
+Correct C: 0, Total C: 140
+Accuracy: 36.9369%
 
+Train 3:
+Epochs: 100
+Learning rate: 0.001
+Batch size: 16
+F1=64, D=2, F2=128, dropout_rate=0.5
+timepoints: 30000
 """

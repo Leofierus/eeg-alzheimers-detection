@@ -66,7 +66,7 @@ print(f'Train dataloader batch size: {train_dataloader.batch_size}\n')
 
 # Hyperparameters
 learning_rate = 0.001
-epochs = 1000
+epochs = 100
 
 # Loss function and optimizer
 criterion = nn.CrossEntropyLoss()
