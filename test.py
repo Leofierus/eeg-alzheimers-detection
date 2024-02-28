@@ -178,9 +178,10 @@ Correct C: 0, Total C: 140
 Accuracy: 36.9369%
 
 Train 3:
-Epochs: 100
+Epochs: 180
 Learning rate: 0.001
-Batch size: 16
+Batch size: 20
 F1=64, D=2, F2=128, dropout_rate=0.5
 timepoints: 30000
+Time taken: 
 """
