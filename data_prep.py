@@ -186,5 +186,5 @@ d5 = os.path.join(d3, 'train')
 d6 = os.path.join(d3, 'test')
 d7 = os.path.join(d4, 'train')
 d8 = os.path.join(d4, 'test')
-d9 = 29999
+d9 = 19999
 data_prep(d1, d2, d3, d4, d5, d6, d7, d8, d9, False)

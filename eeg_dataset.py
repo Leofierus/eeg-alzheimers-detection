@@ -35,5 +35,6 @@ class EEGDataset(Dataset):
 
         # Label
         label = 0 if file_info['label'] == 'A' else 1
+        # print(f'Label: {label} ({file_info["label"]})')
 
         return eeg_data, label

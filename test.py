@@ -16,7 +16,7 @@ if not os.path.exists('images'):
     os.makedirs('images')
 
 model_file = 'eegNet.pth'
-model = EEGNet(num_channels=19, timepoints=30000, num_classes=2, F1=64, D=2, F2=128, dropout_rate=0.5)
+model = EEGNet(num_channels=19, timepoints=20000, num_classes=2, F1=99, D=3, F2=201, dropout_rate=0.7)
 model.load_state_dict(torch.load(model_file))
 
 data_dir = 'model-data'
@@ -27,7 +27,7 @@ with open(os.path.join(data_dir, data_file), 'r') as file:
 
 test_data = [d for d in data_info if d['type'] == 'test']
 test_dataset = EEGDataset(data_dir, test_data)
-test_dataloader = DataLoader(test_dataset, batch_size=8, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
 total_a = 0
 total_c = 0
@@ -59,7 +59,7 @@ with torch.no_grad():
     for eeg_data, labels in test_dataloader:
         eeg_data, labels = eeg_data.to(device), labels.to(device)
         outputs = model(eeg_data)
-        _, predicted = torch.max(outputs, 1)
+        temp, predicted = torch.max(outputs, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
@@ -188,4 +188,28 @@ Correct: 140, Total: 222
 Correct A: 0, Total A: 82
 Correct C: 140, Total C: 140
 Accuracy: 63.0631%
+
+Train 4: (Overfit to C)
+Epochs: 10
+Learning rate: 0.001
+Batch size: 10
+F1=100, D=2, F2=200, dropout_rate=0.25
+timepoints: 20000
+Time taken: ~ 15 minutes
+Correct: 214, Total: 336
+Correct A: 0, Total A: 122
+Correct C: 214, Total C: 214
+Accuracy: 63.6905%
+
+Train 5: (Overfit to C)
+Epochs: 300
+Learning rate: 0.0007
+Batch size: 10
+F1=99, D=3, F2=201, dropout_rate=0.7
+timepoints: 20000
+Time taken: ~ 9 hours
+Correct: 214, Total: 336
+Correct A: 0, Total A: 122
+Correct C: 214, Total C: 214
+Accuracy: 63.6905%
 """
