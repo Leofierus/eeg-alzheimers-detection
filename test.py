@@ -3,9 +3,6 @@ import os
 import json
 import warnings
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, precision_recall_curve, auc, f1_score, confusion_matrix
-from sklearn.metrics import average_precision_score
 from torch.utils.data import DataLoader
 from eeg_dataset import EEGDataset
 from eeg_net import EEGNet
@@ -36,7 +33,7 @@ data_file = 'labels.json'
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'train']
+test_data = [d for d in data_info if d['type'] == 'test']
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -161,4 +158,23 @@ Correct: 214, Total: 336
 Correct A: 0, Total A: 122
 Correct C: 214, Total C: 214
 Accuracy: 63.6905%
+
+Train 6: (Perfect fit to train)
+Epochs: 300
+Learning rate: 0.008, 0.001, 0.0007 (100 epochs each)
+F1=152, D=5, F2=760, dropout_rate=0.5
+timepoints: 7500
+Time taken: ~ 3 days
+Train stats:
+Correct: 3700, Total: 3701
+Correct A: 1590, Total A: 1591
+Correct C: 1274, Total C: 1274
+Correct F: 836, Total F: 836
+Accuracy: 99.9730%
+Test stats:
+Correct: 524, Total: 909
+Correct A: 214, Total A: 333
+Correct C: 184, Total C: 319
+Correct F: 126, Total F: 257
+Accuracy: 57.6458%
 """
