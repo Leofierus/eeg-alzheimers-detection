@@ -50,7 +50,6 @@ def data_prep(participants_tsv, data_dir, intermediate_dir, output_dir, intm_tra
 
         df = pd.DataFrame(tsv_content[1:], columns=tsv_content[0])
         df = df[['participant_id', 'Group']]
-        df.loc[df['Group'] != 'A', 'Group'] = 'C'
 
         train = df.sample(frac=0.8, random_state=42)
         test = df.drop(train.index)
@@ -96,6 +95,9 @@ def data_prep(participants_tsv, data_dir, intermediate_dir, output_dir, intm_tra
         test_count_a = []
         train_count_c = []
         test_count_c = []
+        train_count_f = []
+        test_count_f = []
+
         for data in intermediate_data:
             file_name = data['file_name']
             label = data['label']
@@ -123,23 +125,27 @@ def data_prep(participants_tsv, data_dir, intermediate_dir, output_dir, intm_tra
                 if type_ == 'train':
                     if label == 'A':
                         train_count_a.append(entry)
-                    else:
+                    elif label == 'C':
                         train_count_c.append(entry)
+                    else:
+                        train_count_f.append(entry)
                 else:
                     if label == 'A':
                         test_count_a.append(entry)
-                    else:
+                    elif label == 'C':
                         test_count_c.append(entry)
+                    else:
+                        test_count_f.append(entry)
 
         with open(os.path.join(output_dir, 'labels.json'), 'w') as label_file:
             json.dump(main_json, label_file, indent=4)
 
         print("\nSplit data and JSON saved successfully")
 
-        print(f'\nTrain data distribution:\nA: {len(train_count_a)}, C: {len(train_count_c)}'
-              f', Total: {len(train_count_a) + len(train_count_c)}')
-        print(f'Test data distribution:\nA: {len(test_count_a)}, C: {len(test_count_c)}'
-              , f'Total: {len(test_count_a) + len(test_count_c)}')
+        print(f'\nTrain data distribution:\nA: {len(train_count_a)}, C: {len(train_count_c)}, F: {len(train_count_f)}'
+              f', Total: {len(train_count_a) + len(train_count_c) + len(train_count_f)}')
+        print(f'Test data distribution:\nA: {len(test_count_a)}, C: {len(test_count_c)}, F: {len(test_count_f)}'
+              , f'Total: {len(test_count_a) + len(test_count_c) + len(test_count_f)}')
 
     except Exception as e:
         print(f'Error: {e}')
@@ -186,5 +192,5 @@ d5 = os.path.join(d3, 'train')
 d6 = os.path.join(d3, 'test')
 d7 = os.path.join(d4, 'train')
 d8 = os.path.join(d4, 'test')
-d9 = 19999
+d9 = 7499
 data_prep(d1, d2, d3, d4, d5, d6, d7, d8, d9, False)

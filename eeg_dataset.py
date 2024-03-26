@@ -34,7 +34,7 @@ class EEGDataset(Dataset):
         eeg_data = eeg_data.astype('float32')
 
         # Label
-        label = 0 if file_info['label'] == 'A' else 1
+        label = 0 if file_info['label'] == 'A' else 1 if file_info['label'] == 'C' else 2
         # print(f'Label: {label} ({file_info["label"]})')
 
         return eeg_data, label

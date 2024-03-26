@@ -15,9 +15,20 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 if not os.path.exists('images'):
     os.makedirs('images')
 
+# Model params
+num_chans = 19
+timepoints = 7500
+num_classes = 3
+F1 = 152
+D = 5
+F2 = 760
+dropout_rate = 0.5
+
 model_file = 'eegNet.pth'
-model = EEGNet(num_channels=19, timepoints=20000, num_classes=2, F1=99, D=3, F2=201, dropout_rate=0.7)
+model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
+               F2=F2, dropout_rate=dropout_rate)
 model.load_state_dict(torch.load(model_file))
+print("Model loaded successfully")
 
 data_dir = 'model-data'
 data_file = 'labels.json'
@@ -25,17 +36,20 @@ data_file = 'labels.json'
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'test']
+test_data = [d for d in data_info if d['type'] == 'train']
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
 total_a = 0
 total_c = 0
+total_f = 0
 for entry in test_data:
     if entry['label'] == 'A':
         total_a += 1
     elif entry['label'] == 'C':
         total_c += 1
+    else:
+        total_f += 1
 
 # Print test_dataloader info
 print(f'Test dataset: {len(test_dataset)} samples')
@@ -56,9 +70,10 @@ with torch.no_grad():
     total = 0
     correct_a = 0
     correct_c = 0
+    correct_f = 0
     for eeg_data, labels in test_dataloader:
         eeg_data, labels = eeg_data.to(device), labels.to(device)
-        outputs = model(eeg_data)
+        outputs = model.predict(eeg_data)
         temp, predicted = torch.max(outputs, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
@@ -71,86 +86,20 @@ with torch.no_grad():
                 correct_a += 1
             elif labels[i] == 1 and predicted[i] == 1:
                 correct_c += 1
+            elif labels[i] == 2 and predicted[i] == 2:
+                correct_f += 1
             print(f'Predicted: {predicted[i]}, Model value: {outputs[i]}, Actual: {labels[i]}')
 
     print(f'\nCorrect: {correct}, Total: {total}')
     print(f'Correct A: {correct_a}, Total A: {total_a}')
     print(f'Correct C: {correct_c}, Total C: {total_c}')
+    print(f'Correct F: {correct_f}, Total F: {total_f}')
     print(f'Accuracy: {100 * correct / total:.4f}%')
 
 all_labels = np.array(all_labels)
 all_probs = np.array(all_probs)
 
-# Precision-Recall Curve
-precision, recall, thresholds_pr = precision_recall_curve(all_labels, all_probs)
-plt.plot(recall, precision, label='Precision-Recall Curve')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('Precision-Recall Curve')
-plt.legend()
-plt.savefig('images/precision_recall_curve.png')
-plt.close()
-print("Precision-Recall Curve saved successfully")
-
-# ROC Curve
-fpr, tpr, thresholds_roc = roc_curve(all_labels, all_probs)
-plt.plot(fpr, tpr, label='ROC Curve')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
-plt.legend()
-plt.savefig('images/roc_curve.png')
-plt.close()
-print("ROC Curve saved successfully")
-
-# F1 Score vs. Threshold Curve
-f1_scores = [f1_score(all_labels, all_probs > threshold) for threshold in thresholds_pr]
-plt.plot(thresholds_pr, f1_scores, label='F1 Score vs. Threshold Curve')
-plt.xlabel('Threshold')
-plt.ylabel('F1 Score')
-plt.title('F1 Score vs. Threshold Curve')
-plt.legend()
-plt.savefig('images/f1_score_threshold_curve.png')
-plt.close()
-print("F1 Score vs. Threshold Curve saved successfully")
-
-# AUC-ROC
-roc_auc = auc(fpr, tpr)
-plt.plot([0, 1], [0, 1], 'k--', label='Random')
-plt.plot(fpr, tpr, label=f'AUC-ROC = {roc_auc:.4f}')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('AUC-ROC Curve')
-plt.legend()
-plt.savefig('images/auc_roc_curve.png')
-plt.close()
-print("AUC-ROC Curve saved successfully")
-
-# AUC-PR
-pr_auc = average_precision_score(all_labels, all_probs)
-plt.plot([0, 1], [np.sum(all_labels == 1) / len(all_labels)] * 2, 'k--', label='Random')
-plt.plot(recall, precision, label=f'AUC-PR = {pr_auc:.4f}')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('AUC-PR Curve')
-plt.legend()
-plt.savefig('images/auc_pr_curve.png')
-plt.close()
-print("AUC-PR Curve saved successfully")
-
-# Confusion Matrix
-conf_matrix = confusion_matrix(all_labels, all_probs > 0.5)
-plt.imshow(conf_matrix, interpolation='nearest', cmap=plt.cm.Blues)
-plt.title('Confusion Matrix')
-plt.colorbar()
-plt.xlabel('Predicted label')
-plt.ylabel('True label')
-plt.xticks([0, 1], ['C', 'A'])
-plt.yticks([0, 1], ['C', 'A'])
-plt.savefig('images/confusion_matrix.png')
-plt.close()
-print("Confusion Matrix saved successfully")
-
+print(f"Labels: {all_labels}\nProbs: {all_probs}")
 
 """
 Train 1: (Good)

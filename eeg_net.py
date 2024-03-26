@@ -65,6 +65,25 @@ class EEGNet(nn.Module):
 
         return x
 
+    def predict(self, x):
+        x = x.view(x.size(0), 1, x.size(1), x.size(2))
+        x = self.conv1(x)
+        x = self.batchnorm1(x)
+        x = self.depthwise_conv1(x)
+        x = self.batchnorm2(x)
+        x = self.activation1(x)
+        x = self.avgpool1(x)
+
+        x = self.separable_conv2(x)
+        x = self.batchnorm3(x)
+        x = self.activation2(x)
+        x = self.avgpool2(x)
+
+        x = self.flatten(x)
+        x = self.classifier(x)
+
+        return x
+
 
 # # Example usage
 # nc = 19
