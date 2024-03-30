@@ -14,6 +14,7 @@ mne.cuda.init_cuda(verbose=True)
 
 def load_eeg_data(file_path):
     raw = mne.io.read_raw_eeglab(file_path)
+    raw = raw.resample(95)
     return raw.get_data()
 
 
@@ -21,6 +22,10 @@ class EEGDataset(Dataset):
     def __init__(self, data_directory, dataset):
         self.data_directory = data_directory
         self.dataset = dataset
+        labels = [d['label'] for d in dataset]
+        self.labels = labels
+        data = [d['file_name'] for d in dataset]
+        self.data = data
 
     def __len__(self):
         return len(self.dataset)

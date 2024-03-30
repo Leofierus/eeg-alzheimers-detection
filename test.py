@@ -33,7 +33,7 @@ data_file = 'labels.json'
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'test']
+test_data = [d for d in data_info if d['type'] == 'train']
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -99,6 +99,8 @@ all_probs = np.array(all_probs)
 print(f"Labels: {all_labels}\nProbs: {all_probs}")
 
 """
+Simple Batch Training
+
 Train 1: (Good)
 Epochs: 300
 Learning rate: 0.001
@@ -177,4 +179,9 @@ Correct A: 214, Total A: 333
 Correct C: 184, Total C: 319
 Correct F: 126, Total F: 257
 Accuracy: 57.6458%
+
+Added self.dense layer now, all models before this did not have this layer
+
+5-Fold Cross Validation
+
 """

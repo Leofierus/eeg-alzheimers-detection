@@ -23,7 +23,8 @@ class EEGNet(nn.Module):
 
         # Classifier
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(F2 * (timepoints // 32), num_classes)
+        self.dense = nn.Linear(F2 * (timepoints // 32), 21)
+        self.classifier = nn.Linear(21, num_classes)
 
     def forward(self, x):
         # Block 1
@@ -60,6 +61,8 @@ class EEGNet(nn.Module):
         # Classifier
         x = self.flatten(x)
         # print(f'Shape (flatten): {x.shape}')
+        x = self.dense(x)
+        # print(f'Shape (dense): {x.shape}')
         x = self.classifier(x)
         # print(f'Shape (classifier): {x.shape}')
 
@@ -80,9 +83,13 @@ class EEGNet(nn.Module):
         x = self.avgpool2(x)
 
         x = self.flatten(x)
+        x = self.dense(x)
         x = self.classifier(x)
 
         return x
+
+    def num_params(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 
 # # Example usage

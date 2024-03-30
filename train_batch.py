@@ -38,7 +38,7 @@ eegnet_model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes
 print(eegnet_model)
 print(f"Model params: num_channels={num_chans}, timepoints={timepoints}, num_classes={num_classes}, F1={F1}, "
       f"D={D}, F2={F2}, dropout_rate={dropout_rate}")
-eegnet_model.load_state_dict(torch.load('eegNet.pth'))
+eegnet_model.load_state_dict(torch.load('eegNet_train6.pth'))
 
 # Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -53,22 +53,22 @@ with open(os.path.join(data_dir, data_file), 'r') as file:
 
 train_data = [d for d in data_info if d['type'] == 'train']
 
-test_data = []
-count_a, count_c, count_f = 0, 0, 0
+# test_data = []
+# count_a, count_c, count_f = 0, 0, 0
+#
+# for entry in data_info:
+#     if entry['type'] == 'test':
+#         if entry['label'] == 'A' and count_a < 3:
+#             test_data.append(entry)
+#             count_a += 1
+#         elif entry['label'] == 'C' and count_c < 3:
+#             test_data.append(entry)
+#             count_c += 1
+#         elif entry['label'] == 'F' and count_f < 3:
+#             test_data.append(entry)
+#             count_f += 1
 
-for entry in data_info:
-    if entry['type'] == 'test':
-        if entry['label'] == 'A' and count_a < 3:
-            test_data.append(entry)
-            count_a += 1
-        elif entry['label'] == 'C' and count_c < 3:
-            test_data.append(entry)
-            count_c += 1
-        elif entry['label'] == 'F' and count_f < 3:
-            test_data.append(entry)
-            count_f += 1
-
-test_dataset = EEGDataset(data_dir, test_data)
+# test_dataset = EEGDataset(data_dir, test_data)
 
 # Separate training data by class
 train_data_A = [d for d in train_data if d['label'] == 'A']
@@ -94,7 +94,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=16, sampler=train_sample
 
 
 # train_dataloader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
+# test_dataloader = DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
 
 # Print train_dataloader info
 print(f'Train dataset: {len(train_dataset)} samples')
@@ -154,13 +154,6 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
 plt.savefig('images/train_losses.png')
-plt.close()
-
-plt.plot(test_losses, label='Test Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-plt.savefig('images/test_losses.png')
 plt.close()
 
 print('Loss plots saved')
