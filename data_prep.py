@@ -9,6 +9,7 @@ import json
 import pandas as pd
 import mne
 import warnings
+import random
 
 # Ignore RuntimeWarning
 warnings.filterwarnings('ignore', category=RuntimeWarning)
@@ -16,6 +17,9 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 # Enable CUDA
 mne.utils.set_config('MNE_USE_CUDA', 'true')
 mne.cuda.init_cuda(verbose=True)
+
+# Set random seed
+random.seed(42)
 
 
 """
@@ -72,7 +76,7 @@ def data_prep(participants_tsv, data_dir, intermediate_dir, output_dir, intm_tra
         print('Intermediate Test data saved successfully')
 
         train_json_data = create_json_structure(train, 'train', intermediate_dir)
-        test_json_data = create_json_structure(test, 'test', intermediate_dir)
+        test_json_data = create_json_structure(test, 'test_cross', intermediate_dir)
 
         with open(os.path.join(intermediate_dir, 'labels.json'), 'w') as label_file:
             json.dump(train_json_data + test_json_data, label_file, indent=4)
@@ -93,59 +97,85 @@ def data_prep(participants_tsv, data_dir, intermediate_dir, output_dir, intm_tra
         main_json = []
         train_count_a = []
         test_count_a = []
+        test_count_w_a = []
         train_count_c = []
         test_count_c = []
+        test_count_w_c = []
         train_count_f = []
         test_count_f = []
+        test_count_w_f = []
 
         for data in intermediate_data:
             file_name = data['file_name']
             label = data['label']
             type_ = data['type']
             raw = mne.io.read_raw_eeglab(os.path.join(intermediate_dir, file_name))
+            raw = raw.crop(tmin=30, tmax=raw.times[-30])
+            raw = raw.resample(95)
             data_points = raw.get_data().shape[1]
             num_chunks = data_points // split_size
-            print(f'File: {file_name}, Label: {label}, Type: {type_}, Timepoints: {data_points}, Chunks: {num_chunks}'
-                  f', Discarded timepoints: {data_points % split_size}')
+            print(f'File: {file_name}, Label: {label}, Type: {type_}, Timepoints: {data_points}, '
+                  f'Chunks: {num_chunks}, Discarded timepoints: {(data_points % split_size) + 5700}')
             for i in range(num_chunks):
+                flag = False
                 start = i * split_size
                 end = (i + 1) * split_size
                 chunk = raw.copy().crop(tmin=start / raw.info['sfreq'], tmax=end / raw.info['sfreq'])
                 chunk_file_name = f'{file_name.split(".")[0]}_chunk_{i}.set'
+                if type_ == 'train' and random.random() < 0.1:
+                    flag = True
+                    chunk_file_name = chunk_file_name.replace('train', 'test')
                 chunk.export(os.path.join(output_dir, chunk_file_name), overwrite=True)
                 entry = {
                     "file_name": chunk_file_name,
                     "label": label,
-                    "type": type_,
+                    "type": type_ if not flag else 'test_within',
                     "num_channels": chunk.info['nchan'],
                     "timepoints": chunk.get_data().shape[1],
                     "total_time (in seconds)": chunk.get_data().shape[1] / chunk.info['sfreq']
                 }
                 main_json.append(entry)
-                if type_ == 'train':
+                if entry.get("type") == 'train':
                     if label == 'A':
                         train_count_a.append(entry)
                     elif label == 'C':
                         train_count_c.append(entry)
                     else:
                         train_count_f.append(entry)
-                else:
+                elif entry.get("type") == 'test_cross':
                     if label == 'A':
                         test_count_a.append(entry)
                     elif label == 'C':
                         test_count_c.append(entry)
                     else:
                         test_count_f.append(entry)
+                else:
+                    if label == 'A':
+                        test_count_w_a.append(entry)
+                    elif label == 'C':
+                        test_count_w_c.append(entry)
+                    else:
+                        test_count_w_f.append(entry)
 
         with open(os.path.join(output_dir, 'labels.json'), 'w') as label_file:
             json.dump(main_json, label_file, indent=4)
 
         print("\nSplit data and JSON saved successfully")
 
-        print(f'\nTrain data distribution:\nA: {len(train_count_a)}, C: {len(train_count_c)}, F: {len(train_count_f)}'
+        print(f'\nTrain data distribution:\n'
+              f'A: {len(train_count_a)}, C: {len(train_count_c)}, F: {len(train_count_f)}'
               f', Total: {len(train_count_a) + len(train_count_c) + len(train_count_f)}')
-        print(f'Test data distribution:\nA: {len(test_count_a)}, C: {len(test_count_c)}, F: {len(test_count_f)}'
+        print(f'Test data distribution (cross subject):\n'
+              f'A: {len(test_count_a)}, C: {len(test_count_c)}, F: {len(test_count_f)}'
               , f'Total: {len(test_count_a) + len(test_count_c) + len(test_count_f)}')
+        print(f'Test data distribution (within subject):\n'
+              f'A: {len(test_count_w_a)}, C: {len(test_count_w_c)}, F: {len(test_count_w_f)}'
+              , f'Total: {len(test_count_w_a) + len(test_count_w_c) + len(test_count_w_f)}')
+        print(f'\nTotal distribution:\n'
+              f'A: {len(train_count_a) + len(test_count_a) + len(test_count_w_a)}, '
+              f'C: {len(train_count_c) + len(test_count_c) + len(test_count_w_c)}, '
+              f'F: {len(train_count_f) + len(test_count_f) + len(test_count_w_f)}, '
+              f'Total: {len(main_json)}')
 
     except Exception as e:
         print(f'Error: {e}')
@@ -153,8 +183,9 @@ def data_prep(participants_tsv, data_dir, intermediate_dir, output_dir, intm_tra
 
 def create_json_structure(df, data_type, output_dir):
     json_data = []
+    file_data = data_type.split('_')[0]
     for _, row in df.iterrows():
-        file_name = f"{data_type}/{row['participant_id']}_eeg.set"
+        file_name = f"{file_data}/{row['participant_id']}_eeg.set"
         label = row['Group']
         raw = mne.io.read_raw_eeglab(os.path.join(output_dir, file_name))
         entry = {
@@ -192,5 +223,6 @@ d5 = os.path.join(d3, 'train')
 d6 = os.path.join(d3, 'test')
 d7 = os.path.join(d4, 'train')
 d8 = os.path.join(d4, 'test')
-d9 = 7499
+# 95 * number of seconds you want - 1
+d9 = 1424
 data_prep(d1, d2, d3, d4, d5, d6, d7, d8, d9, False)
