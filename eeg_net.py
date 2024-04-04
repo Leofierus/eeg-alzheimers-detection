@@ -130,7 +130,7 @@ D = 5
 F2 = 190
 dropout_rate = 0.5
 
-model_file = 'eegnet_5fold.pth'
+model_file = 'models/eegnet_5fold.pth'
 model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
                F2=F2, dropout_rate=dropout_rate)
 model.load_state_dict(torch.load(model_file))

@@ -153,7 +153,7 @@ print(f'Average Training Loss: {avg_train_loss}')
 print('Training complete!')
 
 # Save model
-model_file = 'eegnet_5fold.pth'
+model_file = 'models/eegnet_5fold.pth'
 torch.save(eegnet_model.state_dict(), model_file)
 print(f'Model saved to {model_file}')
 

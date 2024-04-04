@@ -38,7 +38,7 @@ eegnet_model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes
 print(eegnet_model)
 print(f"Model params: num_channels={num_chans}, timepoints={timepoints}, num_classes={num_classes}, F1={F1}, "
       f"D={D}, F2={F2}, dropout_rate={dropout_rate}")
-eegnet_model.load_state_dict(torch.load('eegNet_train6.pth'))
+eegnet_model.load_state_dict(torch.load('models/eegNet_train6.pth'))
 
 # Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
