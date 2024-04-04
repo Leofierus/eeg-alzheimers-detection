@@ -1,4 +1,7 @@
+import torchviz
+import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 
 
 class EEGNet(nn.Module):
@@ -68,28 +71,42 @@ class EEGNet(nn.Module):
 
         return x
 
-    def predict(self, x):
-        x = x.view(x.size(0), 1, x.size(1), x.size(2))
-        x = self.conv1(x)
-        x = self.batchnorm1(x)
-        x = self.depthwise_conv1(x)
-        x = self.batchnorm2(x)
-        x = self.activation1(x)
-        x = self.avgpool1(x)
-
-        x = self.separable_conv2(x)
-        x = self.batchnorm3(x)
-        x = self.activation2(x)
-        x = self.avgpool2(x)
-
-        x = self.flatten(x)
-        x = self.dense(x)
-        x = self.classifier(x)
-
-        return x
-
     def num_params(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def visualize_model(self, filename):
+        x = torch.zeros(1, 19, 1425)
+        y = self(x)
+        g = torchviz.make_dot(y, params=dict(self.named_parameters()))
+        g.render(filename, format='png', cleanup=True)
+        return filename
+
+    def visualize_temporal_filters(self, filename):
+        filters = self.depthwise_conv1.weight.data.cpu().numpy()
+        filters = filters.squeeze()
+        filters = filters.transpose(0, 1)
+        filters = filters.reshape(-1, 19, 285)
+        filters = filters.transpose(0, 2, 1)
+        filters = filters.reshape(-1, 19)
+        plt.figure(figsize=(20, 10))
+        plt.imshow(filters, aspect='auto', cmap='gray')
+        plt.axis('off')
+        plt.savefig(filename)
+        plt.close()
+        return filename
+
+    def visualize_spatial_filters(self, filename):
+        filters = self.separable_conv2.weight.data.cpu().numpy()
+        filters = filters.squeeze()
+        # Filters have a shape of (190, 285, 16)
+        filters = filters.transpose(0, 2)
+        filters = filters.reshape(-1, 19)
+        plt.figure(figsize=(20, 10))
+        plt.imshow(filters, aspect='auto', cmap='gray')
+        plt.axis('off')
+        plt.savefig(filename)
+        plt.close()
+        return filename
 
 
 # # Example usage
@@ -103,3 +120,23 @@ class EEGNet(nn.Module):
 #
 # model = EEGNet(nc, ts, ncl, f1, d, f2, dr)
 # print(model)
+
+# Model params
+num_chans = 19
+timepoints = 1425
+num_classes = 3
+F1 = 57
+D = 5
+F2 = 190
+dropout_rate = 0.5
+
+model_file = 'eegnet_5fold.pth'
+model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
+               F2=F2, dropout_rate=dropout_rate)
+model.load_state_dict(torch.load(model_file))
+print("Model loaded successfully")
+
+# Visualize model
+model.visualize_model('images/eegnet_model')
+model.visualize_temporal_filters('images/eegnet_temporal_filters.png')
+model.visualize_spatial_filters('images/eegnet_spatial_filters.png')

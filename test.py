@@ -14,14 +14,14 @@ if not os.path.exists('images'):
 
 # Model params
 num_chans = 19
-timepoints = 7500
+timepoints = 1425
 num_classes = 3
-F1 = 152
+F1 = 57
 D = 5
-F2 = 760
+F2 = 190
 dropout_rate = 0.5
 
-model_file = 'eegNet.pth'
+model_file = 'eegnet_5fold.pth'
 model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
                F2=F2, dropout_rate=dropout_rate)
 model.load_state_dict(torch.load(model_file))
@@ -33,7 +33,7 @@ data_file = 'labels.json'
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'train']
+test_data = [d for d in data_info if d['type'] == 'test']
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -70,7 +70,7 @@ with torch.no_grad():
     correct_f = 0
     for eeg_data, labels in test_dataloader:
         eeg_data, labels = eeg_data.to(device), labels.to(device)
-        outputs = model.predict(eeg_data)
+        outputs = model.forward(eeg_data)
         temp, predicted = torch.max(outputs, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
@@ -183,5 +183,21 @@ Accuracy: 57.6458%
 Added self.dense layer now, all models before this did not have this layer
 
 5-Fold Cross Validation
-
+Epochs: 300/each fold
+Learning rate: LinearLR(optimizer, start_factor=0.5, end_factor=0.001, total_iters=epochs*5)
+F1=57, D=5, F2=190, dropout_rate=0.5
+timepoints: 1425
+Time taken: ~ 1.5 days
+Train stats:
+Correct: 3603, Total: 3701
+Correct A: 1493, Total A: 1591
+Correct C: 1274, Total C: 1274
+Correct F: 836, Total F: 836
+Accuracy: 97.3521%
+Test stats:
+Correct: 671, Total: 909
+Correct A: 183, Total A: 333
+Correct C: 231, Total C: 319
+Correct F: 257, Total F: 257
+Accuracy: 73.8174%
 """

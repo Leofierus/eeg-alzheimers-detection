@@ -14,7 +14,6 @@ mne.cuda.init_cuda(verbose=True)
 
 def load_eeg_data(file_path):
     raw = mne.io.read_raw_eeglab(file_path)
-    raw = raw.resample(95)
     return raw.get_data()
 
 
