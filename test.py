@@ -33,7 +33,7 @@ data_file = 'labels.json'
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'test']
+test_data = [d for d in data_info if d['type'] == 'test_cross']
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -93,10 +93,10 @@ with torch.no_grad():
     print(f'Correct F: {correct_f}, Total F: {total_f}')
     print(f'Accuracy: {100 * correct / total:.4f}%')
 
-all_labels = np.array(all_labels)
-all_probs = np.array(all_probs)
+# all_labels = np.array(all_labels)
+# all_probs = np.array(all_probs)
 
-print(f"Labels: {all_labels}\nProbs: {all_probs}")
+# print(f"Labels: {all_labels}\nProbs: {all_probs}")
 
 """
 Simple Batch Training
@@ -180,7 +180,7 @@ Correct C: 184, Total C: 319
 Correct F: 126, Total F: 257
 Accuracy: 57.6458%
 
-Added self.dense layer now, all models before this did not have this layer
+NOTE: Added self.dense layer now, all models before this did not have this layer
 
 5-Fold Cross Validation
 Epochs: 300/each fold
@@ -200,4 +200,32 @@ Correct A: 183, Total A: 333
 Correct C: 231, Total C: 319
 Correct F: 257, Total F: 257
 Accuracy: 73.8174%
+
+NOTE: Divided into within and cross subject test data
+
+5-Fold Cross Validation (Same model)
+Epochs: 300/each fold
+Learning rate: LinearLR(optimizer, start_factor=0.5, end_factor=0.001, total_iters=epochs*5)
+F1=57, D=5, F2=190, dropout_rate=0.5
+timepoints: 1425
+Time taken: ~ 1.5 days
+Train stats:
+Correct: 3603, Total: 3701
+Correct A: 1493, Total A: 1591
+Correct C: 1274, Total C: 1274
+Correct F: 836, Total F: 836
+Accuracy: 97.3521%
+Test Stats (Within):
+Correct: 335, Total: 344
+Correct A: 137, Total A: 146
+Correct C: 126, Total C: 126
+Correct F: 72, Total F: 72
+Accuracy: 97.3837%
+Test Stats (Cross):
+Correct: 652, Total: 873
+Correct A: 184, Total A: 319
+Correct C: 221, Total C: 307
+Correct F: 247, Total F: 247
+Accuracy: 74.6850%
+
 """

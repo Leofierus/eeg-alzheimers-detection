@@ -122,21 +122,21 @@ class EEGNet(nn.Module):
 # print(model)
 
 # Model params
-num_chans = 19
-timepoints = 1425
-num_classes = 3
-F1 = 57
-D = 5
-F2 = 190
-dropout_rate = 0.5
-
-model_file = 'models/eegnet_5fold.pth'
-model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
-               F2=F2, dropout_rate=dropout_rate)
-model.load_state_dict(torch.load(model_file))
-print("Model loaded successfully")
-
-# Visualize model
-model.visualize_model('images/eegnet_model')
-model.visualize_temporal_filters('images/eegnet_temporal_filters.png')
-model.visualize_spatial_filters('images/eegnet_spatial_filters.png')
+# num_chans = 19
+# timepoints = 1425
+# num_classes = 3
+# F1 = 57
+# D = 5
+# F2 = 190
+# dropout_rate = 0.5
+#
+# model_file = 'models/eegnet_5fold.pth'
+# model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
+#                F2=F2, dropout_rate=dropout_rate)
+# model.load_state_dict(torch.load(model_file))
+# print("Model loaded successfully")
+#
+# # Visualize model
+# model.visualize_model('images/eegnet_model')
+# model.visualize_temporal_filters('images/eegnet_temporal_filters.png')
+# model.visualize_spatial_filters('images/eegnet_spatial_filters.png')
