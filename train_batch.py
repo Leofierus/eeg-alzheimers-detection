@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
+import random
 
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
@@ -19,6 +20,9 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 # Enable CUDA
 mne.utils.set_config('MNE_USE_CUDA', 'true')
 mne.cuda.init_cuda(verbose=True)
+
+# Set random seed
+random.seed(42)
 
 if not os.path.exists('images'):
     os.makedirs('images')
@@ -53,36 +57,27 @@ with open(os.path.join(data_dir, data_file), 'r') as file:
 
 train_data = [d for d in data_info if d['type'] == 'train']
 
-# test_data = []
-# count_a, count_c, count_f = 0, 0, 0
-#
-# for entry in data_info:
-#     if entry['type'] == 'test':
-#         if entry['label'] == 'A' and count_a < 3:
-#             test_data.append(entry)
-#             count_a += 1
-#         elif entry['label'] == 'C' and count_c < 3:
-#             test_data.append(entry)
-#             count_c += 1
-#         elif entry['label'] == 'F' and count_f < 3:
-#             test_data.append(entry)
-#             count_f += 1
-
-# test_dataset = EEGDataset(data_dir, test_data)
-
 # Separate training data by class
 train_data_A = [d for d in train_data if d['label'] == 'A']
 train_data_C = [d for d in train_data if d['label'] == 'C']
 train_data_F = [d for d in train_data if d['label'] == 'F']
 
 # Determine the minimum number of samples for balancing
-min_samples = min(len(train_data_A), len(train_data_C), len(train_data_F))
+min_samples = min((len(train_data_A)+len(train_data_C))/2, (len(train_data_A)+len(train_data_F))/2,
+                  (len(train_data_C)+len(train_data_F))/2)
+
+a_index = int(min(min_samples, len(train_data_A)))
+c_index = int(min(min_samples, len(train_data_C)))
+f_index = int(min(min_samples, len(train_data_F)))
 
 # Randomly sample from each class to create a balanced training set
-balanced_train_data = train_data_A[:min_samples] + train_data_C[:min_samples] + train_data_F[:min_samples]
+balanced_train_data = (random.sample(train_data_A, a_index) +
+                       random.sample(train_data_C, c_index) +
+                       random.sample(train_data_F, f_index))
 
 print(f'Before Balancing\nA: {len(train_data_A)}, C: {len(train_data_C)}, F: {len(train_data_F)}')
-print(f'After Balancing\nA: {min_samples}, C: {min_samples}, F: {min_samples}')
+print(f'After Balancing\nA: {a_index}, C: {c_index}, F: {f_index}')
+print(f'Total: {len(balanced_train_data)}')
 
 # Create a new EEGDataset using the balanced training data
 train_dataset = EEGDataset(data_dir, balanced_train_data)
@@ -91,10 +86,6 @@ train_dataset = EEGDataset(data_dir, balanced_train_data)
 indices = list(range(len(train_dataset)))
 train_sampler = SubsetRandomSampler(indices)
 train_dataloader = DataLoader(train_dataset, batch_size=16, sampler=train_sampler)
-
-
-# train_dataloader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-# test_dataloader = DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
 
 # Print train_dataloader info
 print(f'Train dataset: {len(train_dataset)} samples')
