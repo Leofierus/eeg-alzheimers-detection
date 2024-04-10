@@ -16,12 +16,12 @@ if not os.path.exists('images'):
 num_chans = 19
 timepoints = 1425
 num_classes = 3
-F1 = 57
+F1 = 5
 D = 5
-F2 = 190
+F2 = 25
 dropout_rate = 0.5
 
-model_file = 'models/eegnet_5fold.pth'
+model_file = 'models/eegnet_5fold_train5.pth'
 model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
                F2=F2, dropout_rate=dropout_rate)
 model.load_state_dict(torch.load(model_file))
@@ -33,7 +33,7 @@ data_file = 'labels.json'
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'test_cross']
+test_data = [d for d in data_info if d['type'] == 'test_within']
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -182,7 +182,7 @@ Accuracy: 57.6458%
 
 NOTE: Added self.dense layer now, all models before this did not have this layer
 
-5-Fold Cross Validation
+5-Fold Cross Validation (Plots accidentally overwritten by the next train)
 Epochs: 300/each fold
 Learning rate: LinearLR(optimizer, start_factor=0.5, end_factor=0.001, total_iters=epochs*5)
 F1=57, D=5, F2=190, dropout_rate=0.5

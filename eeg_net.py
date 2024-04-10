@@ -136,7 +136,31 @@ class EEGNet(nn.Module):
 # model.load_state_dict(torch.load(model_file))
 # print("Model loaded successfully")
 #
+# x = torch.zeros(1, 19, 1425)
+# model.forward(x)
+
+#
 # # Visualize model
 # model.visualize_model('images/eegnet_model')
 # model.visualize_temporal_filters('images/eegnet_temporal_filters.png')
 # model.visualize_spatial_filters('images/eegnet_spatial_filters.png')
+
+
+# Model output
+# Shape (input): torch.Size([1, 19, 1425])
+# Shape (reshape): torch.Size([1, 1, 19, 1425])
+# Shape (conv1): torch.Size([1, 57, 19, 1426])
+# Shape (batchnorm1): torch.Size([1, 57, 19, 1426])
+# Shape (depthwise_conv1): torch.Size([1, 285, 1, 1426])
+# Shape (batchnorm2): torch.Size([1, 285, 1, 1426])
+# Shape (activation1): torch.Size([1, 285, 1, 1426])
+# Shape (avgpool1): torch.Size([1, 285, 1, 356])
+# Shape (dropout1): torch.Size([1, 285, 1, 356])
+# Shape (separable_conv2): torch.Size([1, 190, 1, 357])
+# Shape (batchnorm3): torch.Size([1, 190, 1, 357])
+# Shape (activation2): torch.Size([1, 190, 1, 357])
+# Shape (avgpool2): torch.Size([1, 190, 1, 44])
+# Shape (dropout2): torch.Size([1, 190, 1, 44])
+# Shape (flatten): torch.Size([1, 8360])
+# Shape (dense): torch.Size([1, 21])
+# Shape (classifier): torch.Size([1, 3])
