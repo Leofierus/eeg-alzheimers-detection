@@ -135,9 +135,9 @@ valid_dataset = EEGDataset(data_dir, sample_val_data)
 train_dataloader = DataLoader(train_dataset, batch_size=20, shuffle=True)
 valid_dataloader = DataLoader(valid_dataset, batch_size=20, shuffle=True)
 
-study = optuna.create_study(direction='minimize', study_name='eegnet_hyperparameter_tuning',
-                            storage='sqlite:///eegnet.db')
-study.optimize(objective, n_trials=30)
+# study = optuna.create_study(direction='minimize', study_name='eegnet_hyperparameter_tuning',
+#                             storage='sqlite:///eegnet.db')
+# study.optimize(objective, n_trials=30)
 
-# study = optuna.load_study(study_name='eegnet_hyperparameter_tuning', storage='sqlite:///eegnet.db')
-# study.optimize(objective, n_trials=20)
+study = optuna.load_study(study_name='eegnet_hyperparameter_tuning', storage='sqlite:///eegnet.db')
+study.optimize(objective, n_trials=50)
