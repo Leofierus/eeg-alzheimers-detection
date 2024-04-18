@@ -21,7 +21,7 @@ D = 5
 F2 = 25
 dropout_rate = 0.5
 
-model_file = 'models/eegnet_5fold_train5.pth'
+model_file = 'models/eegnet_5fold_train7.pth'
 model = EEGNet(num_channels=num_chans, timepoints=timepoints, num_classes=num_classes, F1=F1, D=D,
                F2=F2, dropout_rate=dropout_rate)
 model.load_state_dict(torch.load(model_file))
@@ -227,5 +227,34 @@ Correct A: 184, Total A: 319
 Correct C: 221, Total C: 307
 Correct F: 247, Total F: 247
 Accuracy: 74.6850%
+
+Skipping intermediate models, accuracy of around 78-85%
+
+After Optuna training:
+
+5-Fold Cross Validation
+Epochs: 810/fold
+Learning rate: LinearLR(optimizer, start_factor=0.9, end_factor=0.001, total_iters=epochs*5)
+F1=5, D=5, F2=25, dropout_rate=0.5
+timepoints: 1425
+Time taken: ~ 2 days
+Train stats:
+Correct: 3212, Total: 3219
+Correct A: 1383, Total A: 1388
+Correct C: 1100, Total C: 1102
+Correct F: 729, Total F: 729
+Accuracy: 99.7825%
+Test Stats (Within):
+Correct: 338, Total: 344
+Correct A: 141, Total A: 146
+Correct C: 125, Total C: 126
+Correct F: 72, Total F: 72
+Accuracy: 98.2558%
+Test Stats (Cross):
+Correct: 806, Total: 873
+Correct A: 293, Total A: 319
+Correct C: 300, Total C: 307
+Correct F: 213, Total F: 247
+Accuracy: 92.3253%
 
 """
