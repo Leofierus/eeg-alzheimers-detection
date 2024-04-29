@@ -93,12 +93,13 @@ print(f'Train dataloader: {len(train_dataloader)} batches')
 print(f'Train dataloader batch size: {train_dataloader.batch_size}\n')
 
 # Hyperparameters
-learning_rate = 0.0007
-epochs = 100
+learning_rate = 0.01
+epochs = 5000
 
 # Loss function and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(eegnet_model.parameters(), lr=learning_rate)
+scheduler = optim.lr_scheduler.LinearLR(optimizer, start_factor=0.9, end_factor=0.001, total_iters=epochs*5)
 
 # Training loop
 train_losses = []
@@ -120,6 +121,7 @@ for epoch in range(epochs):
         train_loss += loss.item()
 
     train_losses.append(train_loss)
+    scheduler.step()
 
     # # Evaluation on the entire test set (single batch)
     # eegnet_model.eval()
