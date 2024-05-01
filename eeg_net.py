@@ -1,7 +1,8 @@
 import torchviz
+import mne
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
+
 
 
 class EEGNet(nn.Module):
@@ -81,32 +82,34 @@ class EEGNet(nn.Module):
         g.render(filename, format='png', cleanup=True)
         return filename
 
-    def visualize_temporal_filters(self, filename):
-        filters = self.depthwise_conv1.weight.data.cpu().numpy()
-        filters = filters.squeeze()
-        filters = filters.transpose(0, 1)
-        filters = filters.reshape(-1, 19, 285)
-        filters = filters.transpose(0, 2, 1)
-        filters = filters.reshape(-1, 19)
-        plt.figure(figsize=(20, 10))
-        plt.imshow(filters, aspect='auto', cmap='gray')
-        plt.axis('off')
-        plt.savefig(filename)
-        plt.close()
-        return filename
+    def visualize_temporal_filters(self, eeg_data, filename):
+        channels = ['Fp1', 'Fp2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'O1', 'O2', 'F7', 'F8', 'T3', 'T4', 'T5', 'T6',
+                    'Fz', 'Cz', 'Pz']
+        ch_dict = {str(i): channels[i] for i in range(19)}
+        og_data = eeg_data
+        eeg_data = eeg_data.view(eeg_data.size(0), 1, eeg_data.size(1), eeg_data.size(2))
+        eeg_data = self.conv1(eeg_data)
+        eeg_data = self.batchnorm1(eeg_data)
 
-    def visualize_spatial_filters(self, filename):
-        filters = self.separable_conv2.weight.data.cpu().numpy()
-        filters = filters.squeeze()
-        # Filters have a shape of (190, 285, 16)
-        filters = filters.transpose(0, 2)
-        filters = filters.reshape(-1, 19)
-        plt.figure(figsize=(20, 10))
-        plt.imshow(filters, aspect='auto', cmap='gray')
-        plt.axis('off')
-        plt.savefig(filename)
-        plt.close()
-        return filename
+        np_x = eeg_data.detach().numpy()
+        np_x = np_x.reshape(5, 19, 1426)
+        og_data = og_data.detach().numpy()
+        og_data = og_data.reshape(19, 1425)
+
+        # Compute psds
+        for i in range(5):
+            eeg_raw = mne.io.RawArray(np_x[i], mne.create_info(ch_names=19, sfreq=95, ch_types='eeg'))
+            eeg_raw.rename_channels(ch_dict)
+            eeg_raw.set_montage('standard_1020')
+            eeg_raw.compute_psd().plot(show=False).savefig(f'{filename}_{i}.png')
+            eeg_raw.compute_psd().plot_topomap(show=False, size=10).savefig(f'{filename}_topomap_{i}.png')
+
+        # Plot original data
+        eeg_raw = mne.io.RawArray(og_data, mne.create_info(ch_names=19, sfreq=95, ch_types='eeg'))
+        eeg_raw.rename_channels(ch_dict)
+        eeg_raw.set_montage('standard_1020')
+        eeg_raw.compute_psd().plot(show=False).savefig(f'{filename}_og.png')
+        eeg_raw.compute_psd().plot_topomap(show=False, size=10).savefig(f'{filename}_topomap_og.png')
 
 
 # # Example usage
@@ -136,7 +139,31 @@ class EEGNet(nn.Module):
 # model.load_state_dict(torch.load(model_file))
 # print("Model loaded successfully")
 #
+# x = torch.zeros(1, 19, 1425)
+# model.forward(x)
+
+#
 # # Visualize model
 # model.visualize_model('images/eegnet_model')
 # model.visualize_temporal_filters('images/eegnet_temporal_filters.png')
 # model.visualize_spatial_filters('images/eegnet_spatial_filters.png')
+
+
+# Model output
+# Shape (input): torch.Size([1, 19, 1425])
+# Shape (reshape): torch.Size([1, 1, 19, 1425])
+# Shape (conv1): torch.Size([1, 57, 19, 1426])
+# Shape (batchnorm1): torch.Size([1, 57, 19, 1426])
+# Shape (depthwise_conv1): torch.Size([1, 285, 1, 1426])
+# Shape (batchnorm2): torch.Size([1, 285, 1, 1426])
+# Shape (activation1): torch.Size([1, 285, 1, 1426])
+# Shape (avgpool1): torch.Size([1, 285, 1, 356])
+# Shape (dropout1): torch.Size([1, 285, 1, 356])
+# Shape (separable_conv2): torch.Size([1, 190, 1, 357])
+# Shape (batchnorm3): torch.Size([1, 190, 1, 357])
+# Shape (activation2): torch.Size([1, 190, 1, 357])
+# Shape (avgpool2): torch.Size([1, 190, 1, 44])
+# Shape (dropout2): torch.Size([1, 190, 1, 44])
+# Shape (flatten): torch.Size([1, 8360])
+# Shape (dense): torch.Size([1, 21])
+# Shape (classifier): torch.Size([1, 3])

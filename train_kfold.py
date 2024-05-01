@@ -32,9 +32,9 @@ if not os.path.exists('images'):
 num_chans = 19
 timepoints = 1425
 num_classes = 3
-F1 = 57
+F1 = 5
 D = 5
-F2 = 190
+F2 = 25
 dropout_rate = 0.5
 
 # Model
@@ -88,13 +88,13 @@ skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
 # Training loop
 train_losses = []
-epochs = 300
+epochs = 810
 learning_rate = 0.01
 
 # Loss function and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(eegnet_model.parameters(), lr=learning_rate)
-scheduler = optim.lr_scheduler.LinearLR(optimizer, start_factor=0.5, end_factor=0.001, total_iters=epochs*5)
+scheduler = optim.lr_scheduler.LinearLR(optimizer, start_factor=0.9, end_factor=0.001, total_iters=epochs*5)
 
 for fold, (train_index, valid_index) in enumerate(skf.split(train_dataset.data, train_dataset.labels)):
     print(f'\nFold {fold + 1}/5')
@@ -160,7 +160,7 @@ print(f'Average Training Loss: {avg_train_loss}')
 print('Training complete!')
 
 # Save model
-model_file = 'models/eegnet_5fold.pth'
+model_file = 'models/eegnet_5fold_train7.pth'
 torch.save(eegnet_model.state_dict(), model_file)
 print(f'Model saved to {model_file}')
 
@@ -169,40 +169,42 @@ plt.plot(train_losses, label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.savefig('images/train_losses_5fold.png')
+plt.savefig('images_train12_kfold/train_losses_5fold.png')
 plt.close()
 
 plt.plot(train_losses[:epochs], label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.savefig('images/train_losses_5fold_fold1.png')
+plt.savefig('images_train12_kfold/train_losses_5fold_fold1.png')
 plt.close()
 
 plt.plot(train_losses[epochs:2*epochs], label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.savefig('images/train_losses_5fold_fold2.png')
+plt.savefig('images_train12_kfold/train_losses_5fold_fold2.png')
 plt.close()
 
 plt.plot(train_losses[2*epochs:3*epochs], label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.savefig('images/train_losses_5fold_fold3.png')
+plt.savefig('images_train12_kfold/train_losses_5fold_fold3.png')
 plt.close()
 
 plt.plot(train_losses[3*epochs:4*epochs], label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.savefig('images/train_losses_5fold_fold4.png')
+plt.savefig('images_train12_kfold/train_losses_5fold_fold4.png')
 plt.close()
 
 plt.plot(train_losses[4*epochs:], label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.savefig('images/train_losses_5fold_fold5.png')
+plt.savefig('images_train12_kfold/train_losses_5fold_fold5.png')
 plt.close()
+
+print('Train losses plotted and saved!')

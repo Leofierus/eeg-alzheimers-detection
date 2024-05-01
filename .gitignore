@@ -1,8 +1,9 @@
 eeg-data
 intermediate-data
-model-data
 model-data_30k
 .idea
 __pycache__
 /model-data_30k/
 /model-data_7.5k/
+/.ipynb_checkpoints/
+*.xpynb
