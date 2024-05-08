@@ -1,17 +1,17 @@
 import torch
 import os
 import json
-import seaborn as sns
-import matplotlib.pyplot as plt
 import warnings
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
+from tqdm import tqdm
 from eeg_net import EEGNet
-from torch.utils.data import DataLoader
 from eeg_dataset import EEGDataset
+from torch.utils.data import DataLoader
 from sklearn.preprocessing import normalize
 from sklearn.metrics import roc_curve, roc_auc_score
-
 
 
 warnings.filterwarnings('ignore', category=RuntimeWarning)
@@ -36,11 +36,12 @@ print("Model loaded successfully")
 
 data_dir = 'model-data'
 data_file = 'labels.json'
+data_type = 'test_cross'
 
 with open(os.path.join(data_dir, data_file), 'r') as file:
     data_info = json.load(file)
 
-test_data = [d for d in data_info if d['type'] == 'test_within']
+test_data = [d for d in data_info if d['type'] == data_type]
 test_dataset = EEGDataset(data_dir, test_data)
 test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -84,7 +85,7 @@ with torch.no_grad():
     correct_f = 0
     f_as_a = 0
     f_as_c = 0
-    for eeg_data, labels in test_dataloader:
+    for eeg_data, labels in tqdm(test_dataloader):
         eeg_data, labels = eeg_data.to(device), labels.to(device)
         outputs = model.forward(eeg_data)
         temp, predicted = torch.max(outputs, 1)
@@ -133,6 +134,10 @@ confusion_matrix[2, 0] = f_as_a
 confusion_matrix[2, 1] = f_as_c
 confusion_matrix[2, 2] = correct_f
 
+accuracy_ad_cn = (correct_a + correct_c) / (total_a + total_c)
+accuracy_ftd_cn = (correct_c + correct_f) / (total_c + total_f)
+accuracy_ad_ftd = (correct_a + correct_f) / (total_a + total_f)
+
 precision_a = correct_a / (correct_a + a_as_c + a_as_f)
 recall_a = correct_a / (correct_a + c_as_a + f_as_a)
 f1_a = 2 * precision_a * recall_a / (precision_a + recall_a)
@@ -157,6 +162,9 @@ print(f'Correct A: {correct_a}, A as C: {a_as_c}, A as F: {a_as_f}, Total A: {to
 print(f'Correct C: {correct_c}, C as A: {c_as_a}, C as F: {c_as_f}, Total C: {total_c}')
 print(f'Correct F: {correct_f}, F as A: {f_as_a}, F as C: {f_as_c}, Total F: {total_f}')
 print(f'Accuracy: {100 * accuracy:.4f}%')
+print(f'Accuracy for AD vs. CN: {100 * accuracy_ad_cn:.4f}%')
+print(f'Accuracy for FTD vs. CN: {100 * accuracy_ftd_cn:.4f}%')
+print(f'Accuracy for AD vs. FTD: {100 * accuracy_ad_ftd:.4f}%')
 print(f'Precision A: {100 * precision_a:.4f}%, Recall A: {100 * recall_a:.4f}%, F1 A: {100 * f1_a:.4f}%, '
       f'Sensitivity A: {100 * sensitivity_a:.4f}%, Specificity A: {100 * recall_a:.4f}%')
 print(f'Precision C: {100 * precision_c:.4f}%, Recall C: {100 * recall_c:.4f}%, F1 C: {100 * f1_c:.4f}%, '
