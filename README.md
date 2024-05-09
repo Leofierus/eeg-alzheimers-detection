@@ -18,14 +18,14 @@ This repository contains the code for classifying neurodegenerative diseases (ND
 
 ## Code Structure
 Files in the repository root:
-- `data_prep.py`: Contains functions for loading and preprocessing the EEG data.
-- `data_vis.py`: Contains functions for visualizing the EEG data.
+- `data_prep.py`: Contains code for loading and preprocessing the EEG data.
+- `data_vis.py`: Contains code for visualizing the EEG data.
 - `eeg_dataset.py`: Contains the EEGDataset class for loading the EEG data.
 - `eeg_net.py`: Contains the EEGNet class for the CNN model.
-- `hyperparameter_tuning.py`: Contains functions for hyperparameter tuning.
-- `test.py`: Contains functions for testing the model.
-- `train_batch.py`: Contains functions for training the model using a vanilla batch training approach.
-- `train_kfold.py`: Contains functions for training the model using k-fold cross-validation.
+- `hyperparameter_tuning.py`: Contains code for hyperparameter tuning.
+- `test.py`: Contains code for testing the model.
+- `train_batch.py`: Contains code for training the model using a vanilla batch training approach.
+- `train_kfold.py`: Contains code for training the model using k-fold cross-validation.
 - `mne_tests.ipynb`: Jupyter notebook for testing the MNE library.
 - `eegnet.db`: SQLite database for storing hyperparameters and model performance.
 
